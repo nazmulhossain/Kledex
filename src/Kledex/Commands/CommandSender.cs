@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Kledex.Dependencies;
 using Kledex.Domain;
@@ -136,8 +137,30 @@ namespace Kledex.Commands
         private Task<CommandResponse> GetCommandResponseAsync(ICommand command)
         {
             var handler = _handlerResolver.ResolveHandler(command, typeof(ICommandHandlerAsync<>));
-            var handleMethod = handler.GetType().GetMethod("HandleAsync", new[] { command.GetType() });
-            return (Task<CommandResponse>)handleMethod.Invoke(handler, new object[] { command });
+            var handleMethod = handler.GetType().GetMethod("HandleAsync", new Type[] { command.GetType() });
+
+
+
+            var response = (Task<CommandResponse>)handleMethod.Invoke(handler, new object[] { command });
+
+
+
+
+
+            Func<ICommand, Task<CommandResponse>> converted = (Func<ICommand, Task<CommandResponse>>)
+                Delegate.CreateDelegate(typeof(Func<ICommand, Task<CommandResponse>>), handler, handleMethod);
+
+
+
+
+
+
+            var res2 = converted(command);
+
+
+
+
+            return res2;
         }
 
         private Task<CommandResponse> GetSequenceCommandResponseAsync(ICommand command, CommandResponse previousStepResponse)
@@ -245,6 +268,25 @@ namespace Kledex.Commands
             var handler = _handlerResolver.ResolveHandler(command, typeof(ISequenceCommandHandler<>));
             var handleMethod = handler.GetType().GetMethod("Handle", new[] { command.GetType(), typeof(CommandResponse) });
             return (CommandResponse)handleMethod.Invoke(handler, new object[] { command, previousStepResponse });
+        }
+    }
+
+    public class MyClass
+    {
+        private void Xxx()
+        {
+            List<MyClass> myClassList = Enumerable.Repeat(new MyClass(), 10000000).ToList();
+            object aux = 0;
+
+            Action<MyClass, int> setter = (Action<MyClass, int>)Delegate.CreateDelegate(typeof(Action<MyClass, int>), null, typeof(MyClass).GetProperty("Number").GetSetMethod());
+
+            Func<MyClass, int> getter = (Func<MyClass, int>)Delegate.CreateDelegate(typeof(Func<MyClass, int>), null, typeof(MyClass).GetProperty("Number").GetGetMethod());
+
+            foreach (var obj in myClassList)
+            {
+                aux = getter(obj);
+                setter(obj, 3);
+            }
         }
     }
 }

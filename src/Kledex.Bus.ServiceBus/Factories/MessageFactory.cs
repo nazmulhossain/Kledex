@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Azure.ServiceBus;
@@ -53,6 +54,27 @@ namespace Kledex.Bus.ServiceBus.Factories
             serviceBusMessage.UserProperties.Add(new KeyValuePair<string, object>(AssemblyQualifiedNamePropertyName, message.GetType().AssemblyQualifiedName));
 
             return serviceBusMessage;
+        }
+
+        private static void ExpressionSet()
+        {
+            var instance = new Message(Encoding.UTF8.GetBytes("json"));
+            var type = instance.GetType();
+
+            var instanceParam = Expression.Parameter(type);
+            var argumentParam = Expression.Parameter(typeof(Object));
+
+            var propertyInfo = type.GetProperty("Name");
+
+            var expression = Expression.Lambda<Action<Message, Object>>(
+                           Expression.Call(instanceParam, propertyInfo.GetSetMethod(), Expression.Convert(argumentParam, propertyInfo.PropertyType)),
+                           instanceParam, argumentParam
+                         ).Compile();
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                expression(instance, "TEST");
+            }
         }
     }
 }
