@@ -24,11 +24,15 @@ namespace Kledex.Bus.ServiceBus.Factories
             {
                 foreach (var prop in message.Properties)
                 {
-                    var mProp = serviceBusMessage.GetType().GetProperty(prop.Key);
-                    if (mProp != null)
+                    if (serviceBusMessage.GetType().GetProperty(prop.Key) != null)
                     {
-                        //Type mPropoType = mProp.GetType();
-                        mProp.SetValue(mProp, message.Properties[prop.Key]);
+
+                        Action<Message, object> setter = (Action<Message, object>)Delegate.CreateDelegate(
+                                typeof(Action<Message, object>), 
+                                null, 
+                                typeof(Message).GetProperty(prop.Key).GetSetMethod());
+
+                        setter(serviceBusMessage, message.Properties[prop.Key]);
                     }
                     else
                     {
@@ -62,11 +66,11 @@ namespace Kledex.Bus.ServiceBus.Factories
             var type = instance.GetType();
 
             var instanceParam = Expression.Parameter(type);
-            var argumentParam = Expression.Parameter(typeof(Object));
+            var argumentParam = Expression.Parameter(typeof(object));
 
             var propertyInfo = type.GetProperty("Name");
 
-            var expression = Expression.Lambda<Action<Message, Object>>(
+            var expression = Expression.Lambda<Action<Message, object>>(
                            Expression.Call(instanceParam, propertyInfo.GetSetMethod(), Expression.Convert(argumentParam, propertyInfo.PropertyType)),
                            instanceParam, argumentParam
                          ).Compile();
