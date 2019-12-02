@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Kledex.Dependencies;
 using Kledex.Domain;
 using Kledex.Events;
+using Kledex.Helpers;
+using Kledex.Sample.EventSourcing.Domain.Commands;
 using Kledex.Validation;
 using Microsoft.Extensions.Options;
 using Options = Kledex.Configuration.Options;
@@ -137,30 +140,13 @@ namespace Kledex.Commands
         private Task<CommandResponse> GetCommandResponseAsync(ICommand command)
         {
             var handler = _handlerResolver.ResolveHandler(command, typeof(ICommandHandlerAsync<>));
-            var handleMethod = handler.GetType().GetMethod("HandleAsync", new Type[] { command.GetType() });
 
+            var handleMethod = typeof(ICommandHandlerAsync<CreateProduct>).GetMethod("HandleAsync", new Type[] { typeof(CreateProduct) });
+            Func<ICommandHandlerAsync<CreateProduct>, object, object> handleFunc = DelegateHelper.CreateDelegate<ICommandHandlerAsync<CreateProduct>>(handleMethod);
 
+            var response = (Task<CommandResponse>)handleFunc((ICommandHandlerAsync<CreateProduct>)handler, command);
 
-            var response = (Task<CommandResponse>)handleMethod.Invoke(handler, new object[] { command });
-
-
-
-
-
-            Func<ICommand, Task<CommandResponse>> converted = (Func<ICommand, Task<CommandResponse>>)
-                Delegate.CreateDelegate(typeof(Func<ICommand, Task<CommandResponse>>), handler, handleMethod);
-
-
-
-
-
-
-            var res2 = converted(command);
-
-
-
-
-            return res2;
+            return response;
         }
 
         private Task<CommandResponse> GetSequenceCommandResponseAsync(ICommand command, CommandResponse previousStepResponse)

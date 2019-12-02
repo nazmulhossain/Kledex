@@ -3,6 +3,7 @@ using Kledex.Caching.Memory;
 using Kledex.Extensions;
 using Kledex.Sample.EventSourcing.Domain;
 using Kledex.Sample.EventSourcing.Reporting.Data;
+using Kledex.Sample.EventSourcing.Reporting.QueryHandlers;
 using Kledex.Store.Cosmos.Sql;
 using Kledex.Store.Cosmos.Sql.Extensions;
 using Kledex.UI.Extensions;
@@ -49,7 +50,7 @@ namespace Kledex.Sample.EventSourcing
                     options.PublishEvents = true;
                     options.SaveCommandData = true;
                     options.ValidateCommands = false;
-                }, typeof(Product))
+                }, typeof(GetProductsHandler))
                 .AddCosmosDbSqlProvider(Configuration)
                 .AddServiceBusProvider()
                 .AddFluentValidationProvider()

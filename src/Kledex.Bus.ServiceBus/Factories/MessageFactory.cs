@@ -26,7 +26,6 @@ namespace Kledex.Bus.ServiceBus.Factories
                 {
                     if (serviceBusMessage.GetType().GetProperty(prop.Key) != null)
                     {
-
                         Action<Message, object> setter = (Action<Message, object>)Delegate.CreateDelegate(
                                 typeof(Action<Message, object>), 
                                 null, 
@@ -38,7 +37,6 @@ namespace Kledex.Bus.ServiceBus.Factories
                     {
                         serviceBusMessage.UserProperties.Add(prop.Key, prop.Value);
                     }
-
 
                     // We could use reflexion here, but i believe we should bet on performace and simplicity.
                     // If not, then we can consider adding more of this properties
