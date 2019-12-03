@@ -141,10 +141,13 @@ namespace Kledex.Commands
         {
             var handler = _handlerResolver.ResolveHandler(command, typeof(ICommandHandlerAsync<>));
 
-            var handleMethod = typeof(ICommandHandlerAsync<CreateProduct>).GetMethod("HandleAsync", new Type[] { typeof(CreateProduct) });
-            Func<ICommandHandlerAsync<CreateProduct>, object, object> handleFunc = DelegateHelper.CreateDelegate<ICommandHandlerAsync<CreateProduct>>(handleMethod);
+            var handleMethod = handler.GetType().GetMethod("HandleAsync", new Type[] { command.GetType() });
 
-            var response = (Task<CommandResponse>)handleFunc((ICommandHandlerAsync<CreateProduct>)handler, command);
+            //var handleFunc = DelegateHelper.CreateDelegate<ICommandHandlerAsync<ICommand>>(handleMethod);
+            //var response = (Task<CommandResponse>)handleFunc((ICommandHandlerAsync<ICommand>)handler, command);
+
+            var handleFunc = DelegateHelper2.CreateDelegate(handleMethod, command);
+            var response = (Task<CommandResponse>)handleFunc(handler, command);
 
             return response;
         }
