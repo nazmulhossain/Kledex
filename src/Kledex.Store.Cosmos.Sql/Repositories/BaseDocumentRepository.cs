@@ -15,17 +15,19 @@ namespace Kledex.Store.Cosmos.Sql.Repositories
         private readonly IDocumentClient _documentClient;
         private readonly string _databaseId;
         private readonly string _collectionId;
+        private readonly RequestOptions _requestOptions;
 
         protected BaseDocumentRepository(string collectionId, IDocumentClient documentClient, IOptions<DomainDbOptions> settings)
         {
             _documentClient = documentClient;
             _databaseId = settings.Value.DatabaseId;
             _collectionId = collectionId;
+            _requestOptions = settings.Value.RequestOptions;
         }
 
         public async Task<Document> CreateDocumentAsync(TDocument document)
         {
-            return await _documentClient.CreateDocumentAsync(GetUri(), document);
+            return await _documentClient.CreateDocumentAsync(GetUri(), document, _requestOptions);
         }
 
         public async Task<TDocument> GetDocumentAsync(string documentId)
