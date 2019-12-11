@@ -34,7 +34,7 @@ namespace Kledex.Store.Cosmos.Sql.Repositories
         {
             try
             {
-                Document document = await _documentClient.ReadDocumentAsync(GetUri(documentId));
+                Document document = await _documentClient.ReadDocumentAsync(GetUri(documentId), _requestOptions);
                 return (TDocument)(dynamic)document;
             }
             catch (DocumentClientException e)
