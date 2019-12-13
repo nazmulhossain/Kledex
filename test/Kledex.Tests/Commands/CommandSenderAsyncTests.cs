@@ -218,7 +218,7 @@ namespace Kledex.Tests.Commands
         [Test]
         public async Task SendAsyncWithResult_ReturnsResult()
         {
-            var actual = await _sut.SendAsync<string>(_createSomething);
+            var actual = await _sut.SendAsync<CreateSomething, string>(_createSomething);
             Assert.AreEqual("Result", actual);
         }
     }

@@ -32,13 +32,15 @@ namespace Kledex
         }
 
         /// <inheritdoc />
-        public Task SendAsync(ICommand command)
+        public Task SendAsync<TCommand>(TCommand command) 
+            where TCommand : ICommand
         {
             return _commandSender.SendAsync(command);
         }
 
         /// <inheritdoc />
-        public Task SendAsync(ICommand command, Func<Task<CommandResponse>> commandHandler)
+        public Task SendAsync<TCommand>(TCommand command, Func<Task<CommandResponse>> commandHandler) 
+            where TCommand : ICommand
         {
             return _commandSender.SendAsync(command, commandHandler);
         }
@@ -50,15 +52,17 @@ namespace Kledex
         }
 
         /// <inheritdoc />
-        public Task<TResult> SendAsync<TResult>(ICommand command)
+        public Task<TResult> SendAsync<TCommand, TResult>(TCommand command)
+            where TCommand : ICommand
         {
-            return _commandSender.SendAsync<TResult>(command);
+            return _commandSender.SendAsync<TCommand, TResult>(command);
         }
 
         /// <inheritdoc />
-        public Task<TResult> SendAsync<TResult>(ICommand command, Func<Task<CommandResponse>> commandHandler)
+        public Task<TResult> SendAsync<TCommand, TResult>(TCommand command, Func<Task<CommandResponse>> commandHandler)
+            where TCommand : ICommand
         {
-            return _commandSender.SendAsync<TResult>(command, commandHandler);
+            return _commandSender.SendAsync<TCommand, TResult>(command, commandHandler);
         }
 
         /// <inheritdoc />

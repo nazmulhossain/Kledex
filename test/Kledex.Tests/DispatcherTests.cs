@@ -84,8 +84,8 @@ namespace Kledex.Tests
         [Test]
         public async Task SendsCommandWithResultAsync()
         {
-            await _sut.SendAsync<string>(_createAggregate);
-            _commandSender.Verify(x => x.SendAsync<string>(_createAggregate), Times.Once);
+            await _sut.SendAsync<CreateAggregate, string>(_createAggregate);
+            _commandSender.Verify(x => x.SendAsync<CreateAggregate, string>(_createAggregate), Times.Once);
         }
 
         [Test]

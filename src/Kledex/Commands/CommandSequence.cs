@@ -17,4 +17,14 @@ namespace Kledex.Commands
             _commands.Add(command);
         }
     }
+
+    public class SeqCom<TCommand> where TCommand : ICommand
+    {
+        public SeqCom(TCommand command)
+        {
+            Command = command;
+        }
+
+        public TCommand Command { get; }
+    }
 }

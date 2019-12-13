@@ -40,13 +40,15 @@ namespace Kledex.Commands
         }
 
         /// <inheritdoc />
-        public async Task SendAsync(ICommand command)
+        public async Task SendAsync<TCommand>(TCommand command) 
+            where TCommand : ICommand
         {
             await ProcessAsync(command, () => GetCommandResponseAsync(command));
         }
 
         /// <inheritdoc />
-        public async Task SendAsync(ICommand command, Func<Task<CommandResponse>> commandHandler)
+        public async Task SendAsync<TCommand>(TCommand command, Func<Task<CommandResponse>> commandHandler) 
+            where TCommand : ICommand
         {
             await ProcessAsync(command, commandHandler);
         }
@@ -58,14 +60,16 @@ namespace Kledex.Commands
         }
 
         /// <inheritdoc />
-        public async Task<TResult> SendAsync<TResult>(ICommand command)
+        public async Task<TResult> SendAsync<TCommand, TResult>(TCommand command)
+            where TCommand : ICommand
         {
             var response = await ProcessAsync(command, () => GetCommandResponseAsync(command));
             return response?.Result != null ? (TResult)response.Result : default;
         }
 
         /// <inheritdoc />
-        public async Task<TResult> SendAsync<TResult>(ICommand command, Func<Task<CommandResponse>> commandHandler)
+        public async Task<TResult> SendAsync<TCommand, TResult>(TCommand command, Func<Task<CommandResponse>> commandHandler)
+            where TCommand : ICommand
         {
             var response = await ProcessAsync(command, commandHandler);
             return response?.Result != null ? (TResult)response.Result : default;
@@ -91,7 +95,8 @@ namespace Kledex.Commands
             return lastStepResponse;
         }
 
-        private async Task<CommandResponse> ProcessAsync(ICommand command, Func<Task<CommandResponse>> getResponse)
+        private async Task<CommandResponse> ProcessAsync<TCommand>(TCommand command, Func<Task<CommandResponse>> getResponse)
+            where TCommand : ICommand
         {
             if (command == null)
             {
@@ -138,11 +143,11 @@ namespace Kledex.Commands
             return response;
         }
 
-        private Task<CommandResponse> GetCommandResponseAsync(ICommand command)
+        private Task<CommandResponse> GetCommandResponseAsync<TCommand>(TCommand command) 
+            where TCommand : ICommand
         {
-            var handler = _handlerResolver.ResolveHandler(command, typeof(ICommandHandlerAsync<>));
-            var handleMethod = handler.GetType().GetMethod("HandleAsync", new[] { command.GetType() });
-            return (Task<CommandResponse>)handleMethod.Invoke(handler, new object[] { command });
+            var handler = _handlerResolver.ResolveHandler<ICommandHandlerAsync<TCommand>>();
+            return handler.HandleAsync(command);
         }
 
         private Task<CommandResponse> GetSequenceCommandResponseAsync(ICommand command, CommandResponse previousStepResponse)
@@ -150,6 +155,9 @@ namespace Kledex.Commands
             var handler = _handlerResolver.ResolveHandler(command, typeof(ISequenceCommandHandlerAsync<>));
             var handleMethod = handler.GetType().GetMethod("HandleAsync", new[] { command.GetType(), typeof(CommandResponse) });
             return (Task<CommandResponse>)handleMethod.Invoke(handler, new object[] { command, previousStepResponse });
+
+            //var handler = _handlerResolver.ResolveHandler<ISequenceCommandHandlerAsync<TCommand>>();
+            //return handler.HandleAsync(command, previousStepResponse);
         }
 
         /// <inheritdoc />
